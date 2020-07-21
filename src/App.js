@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 // import logo from './logo.svg';
 // import './App.css';
 
@@ -85,6 +85,12 @@ function CountryCard(props) {
 
 function App() {
   const [theme, setTheme] = useState('light');
+  const [countries, setCountries] = useState([]);
+
+  useEffect(() => {
+    const countries_data = fetchCountries();
+    countries_data.then(countries => setCountries(countries));
+  }, []);
   
   return (
     <div className={`h-screen w-full overflow-scroll theme-${theme} bg-primary text-primary`} style={{"fontFamily": 'Nunito Sans'}}>
@@ -107,12 +113,12 @@ function App() {
         </div>
       </div>
       <div className="flex flex-wrap ml-4 mr-4">
-        {placeholder_countries.map(country =>
-        <div className="p-8 sm:w-full md:w-1/4">
+        {countries.map(country =>
+        <div className="p-8 sm:w-full md:w-1/4" key={country.code}>
           <CountryCard
             className="flex flex-wrap ml-4 mr-4"
             name={country.name}
-            population={country.population}
+            population={country.formattedPopulation}
             region={country.region}
             capital={country.capital}
             flagPath={country.flagPath}
@@ -122,6 +128,32 @@ function App() {
     </div>
   );
 }
+
+async function fetchCountries() {
+  console.log('fetchCountries called')
+  const reponse = await fetch('https://restcountries.eu/rest/v2/all');
+  const countries_json = await reponse.json();
+  const countries_data = countries_json.map(country => {
+    return {
+      name: country.name,
+      code: country.alpha3Code,
+      formattedPopulation: country.population.toLocaleString(),
+      region: country.region,
+      capital: country.capital,
+      flagPath: country.flag,
+      nativeName: country.nativeName,
+      subregion: country.subregion,
+      topLevelDomains: country.topLevelDomain,
+      currencies: country.currencies,
+      languages: country.languages,
+      borderingCountries: country.borders,
+    }
+  })
+
+  //console.log(countries_data);
+  return countries_data;
+}
+
 
 const placeholder_countries = [
   {
