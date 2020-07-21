@@ -87,11 +87,27 @@ function App() {
   const [theme, setTheme] = useState('light');
   const [countries, setCountries] = useState([]);
 
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(null);
+  const [filteredCountries, setFilteredCountries] = useState([]);
+
+  //fetch countries only once when app is intialized
   useEffect(() => {
     const countries_data = fetchCountries();
-    countries_data.then(countries => setCountries(countries));
+    countries_data.then(countries => {
+      setCountries(countries);
+      setFilteredCountries(countries);
+    });
   }, []);
   
+  //update filteredCountries when search query changes or filter is applied
+  useEffect(() => {
+    let newFilteredCountries = countries;
+    if (searchQuery) newFilteredCountries = newFilteredCountries.filter(c => c.name.toUpperCase().includes(searchQuery.toUpperCase()))
+    if (selectedRegion) newFilteredCountries = newFilteredCountries.filter(c => c.region === selectedRegion)
+    setFilteredCountries(newFilteredCountries);
+  }, [searchQuery, selectedRegion]);
+
   return (
     <div className={`h-screen w-full overflow-scroll theme-${theme} bg-primary text-primary`} style={{"fontFamily": 'Nunito Sans'}}>
       <Navbar 
@@ -101,19 +117,19 @@ function App() {
       <div className="bg-primary flex items-center justify-between flex-wrap pl-12 pr-12 mt-8 w-full">
         <SearchBox 
           placeholder="Search for a country..."
-          onChange={value => console.log(value)}
+          onChange={value => setSearchQuery(value)}
         />
         <div className="mt-8 md:mt-0">
           <Filter 
             placeholder="Filter by Region"
             showAllName="All Regions"
-            options={['Africa', 'America', 'Asia', 'Europe', 'Oceania']}
-            onChange={value => console.log(value)}
+            options={['Africa', 'Americas', 'Asia', 'Europe', 'Oceania']}
+            onChange={value => setSelectedRegion(value)}
           />
         </div>
       </div>
       <div className="flex flex-wrap ml-4 mr-4">
-        {countries.map(country =>
+        {filteredCountries.map(country =>
         <div className="p-8 sm:w-full md:w-1/4" key={country.code}>
           <CountryCard
             className="flex flex-wrap ml-4 mr-4"
