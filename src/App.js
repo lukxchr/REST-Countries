@@ -1,10 +1,8 @@
 import React, {useState, useEffect} from 'react';
-// import logo from './logo.svg';
-// import './App.css';
 
 function Navbar(props) {
   return (
-      <div className="bg-elements shadow h-16 flex items-center justify-between pl-12 pr-12 sticky top-0">
+      <div className="bg-elements shadow h-16 flex items-center justify-between pl-12 pr-12 sticky top-0 z-10">
           <div className="text-xl font-bold">{props.title}</div>
           <a href="#" className="flex items-center" onClick={props.onThemeSwitch}>
             <svg className="inline-block h-4 fill-current" viewBox="0 0 24 24"><path d="M9.57 3.38a8 8 0 0 0 10.4 10.4 1 1 0 0 1 1.31 1.3 10 10 0 1 1-13-13 1 1 0 0 1 1.3 1.3zM7.1 5.04A8 8 0 1 0 18.3 16.27 10 10 0 0 1 7.08 5.04z"/></svg>
@@ -13,7 +11,6 @@ function Navbar(props) {
       </div>
   );
 }
-
 
 function SearchBox(props) {
   return (
@@ -71,13 +68,66 @@ function Filter(props) {
 
 function CountryCard(props) {
   return (
-    <div className="bg-elements rounded overflow-hidden shadow">
-      <img className="w-full sm:object-contain md:object-cover md:h-32 " src={props.flagPath} alt={`flag of ${props.name}`}/>
-      <div className="bg-gray-200 pl-4 pr-4 pb-8 pt-6 truncate text-gray-800">
-        <div className="mb-4 font-bold">{props.name}</div>
-        <div className=""><span className="font-bold text-sm">Population: </span>{props.population}</div>
-        <div className=""><span className="font-bold text-sm">Region: </span>{props.region}</div>
-        <div className=""><span className="font-bold text-sm">Capital: </span>{props.capital}</div>
+    <div className="p-8 sm:w-full md:w-1/4">
+      <div className="bg-elements rounded overflow-hidden shadow" onClick={props.onClick}>
+        <img className="w-full sm:object-contain md:object-cover md:h-32 " src={props.flagPath} alt={`flag of ${props.name}`}/>
+        <div className="bg-gray-200 pl-4 pr-4 pb-8 pt-6 truncate text-gray-800">
+          <div className="mb-4 font-bold">{props.name}</div>
+          <div><span className="font-bold text-sm">Population: </span>{props.population}</div>
+          <div><span className="font-bold text-sm">Region: </span>{props.region}</div>
+          <div><span className="font-bold text-sm">Capital: </span>{props.capital}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CountryGallery(props) {
+
+}
+
+function Button(props) {
+  return (
+    <button 
+      className={`${props.size === 'lg' ? 'h-8' : 'h-6 w-20'} flex items-center bg-elements shadow rounded-sm py-2 px-8 text-xs font-semibold cursor-pointer`}
+      onClick={props.onClick}
+    >
+      {props.iconPath && 
+        <img src={props.iconPath} alt="{props.text}" className="h-3 mr-1 fill-current"/>
+      }
+      <span className="">{props.text}</span>
+    </button>
+  );
+}
+
+function DetailModal(props) {
+  return (
+    <div className="fixed bg-primary inset-0 mt-16 px-12 py-8 overflow-scroll">
+      <Button 
+        size='lg'
+        text='Back'
+        iconPath='images/icon-arrow-left.svg'
+        onClick={props.onBackClick}
+      />
+      <div className="">
+        <img className="mt-16" src={props.countryData.flagPath} alt={`flag of ${props.countryData.name}`}/>
+        <div className="text-lg font-bold mt-10">{props.countryData.name}</div>
+        <div className="my-6">
+          <div className="c"><span className="font-bold text-sm">Native Name: </span>{props.countryData.name}</div>
+          <div className="c"><span className="font-bold text-sm">Population: </span>{props.countryData.formattedPopulation}</div>
+          <div className="c"><span className="font-bold text-sm">Region: </span>{props.countryData.region}</div>
+          <div className="c"><span className="font-bold text-sm">Sub Region: </span>{props.countryData.subregion}</div>
+          <div className="c"><span className="font-bold text-sm">Capital: </span>{props.countryData.capital}</div>
+        </div>
+        <div>
+          <div className="c"><span className="font-bold text-sm">Top Level Domain: </span>{props.countryData.topLevelDomains}</div>
+          <div className="c"><span className="font-bold text-sm">Currencies: </span>{props.countryData.currencies.map(cur => cur.name).join(', ')}</div>
+          <div className="c"><span className="font-bold text-sm">Languages: </span>{props.countryData.languages.map(lang => lang.name).join(', ')}</div>
+        </div>
+        <div className="mt-6 mb-16">
+          <div className="font-semibold mb-4">Border Countries: </div>
+          <div className="flex flex-wrap">{props.countryData.borderingCountries.map(bc => <div className="m-1"><Button text={bc}/></div>)}</div>
+        </div>
       </div>
     </div>
   );
@@ -86,17 +136,23 @@ function CountryCard(props) {
 function App() {
   const [theme, setTheme] = useState('light');
   const [countries, setCountries] = useState([]);
+  const [regions, setRegions] = useState([]);
 
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [searchQuery, setSearchQuery] = useState(null);
   const [filteredCountries, setFilteredCountries] = useState([]);
+
+  //const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailModalCountry, setDetailModalCountry] = useState(null);
 
   //fetch countries only once when app is intialized
   useEffect(() => {
     const countries_data = fetchCountries();
     countries_data.then(countries => {
       setCountries(countries);
-      setFilteredCountries(countries);
+      // setFilteredCountries(countries);
+      const unique_regions = Array.from(new Set(countries.map(c => c.region)));
+      setRegions(unique_regions.sort().filter(r => r)); //sort and filter out empty
     });
   }, []);
   
@@ -106,7 +162,7 @@ function App() {
     if (searchQuery) newFilteredCountries = newFilteredCountries.filter(c => c.name.toUpperCase().includes(searchQuery.toUpperCase()))
     if (selectedRegion) newFilteredCountries = newFilteredCountries.filter(c => c.region === selectedRegion)
     setFilteredCountries(newFilteredCountries);
-  }, [searchQuery, selectedRegion]);
+  }, [countries, searchQuery, selectedRegion]);
 
   return (
     <div className={`h-screen w-full overflow-scroll theme-${theme} bg-primary text-primary`} style={{"fontFamily": 'Nunito Sans'}}>
@@ -123,24 +179,37 @@ function App() {
           <Filter 
             placeholder="Filter by Region"
             showAllName="All Regions"
-            options={['Africa', 'Americas', 'Asia', 'Europe', 'Oceania']}
+            options={regions}
             onChange={value => setSelectedRegion(value)}
           />
         </div>
       </div>
+
+      <CountryGallery 
+        countries={}
+      />
+
       <div className="flex flex-wrap ml-4 mr-4">
         {filteredCountries.map(country =>
-        <div className="p-8 sm:w-full md:w-1/4" key={country.code}>
           <CountryCard
+            key={country.code}
             className="flex flex-wrap ml-4 mr-4"
             name={country.name}
             population={country.formattedPopulation}
             region={country.region}
             capital={country.capital}
             flagPath={country.flagPath}
+            onClick={() => setDetailModalCountry(filteredCountries.find(c => c.code === country.code))}
           />
-        </div>)}
+        )}
       </div>
+
+      {detailModalCountry && 
+        <DetailModal
+          countryData={detailModalCountry}
+          onBackClick={() => setDetailModalCountry(null)}
+        />
+      }
     </div>
   );
 }
@@ -165,8 +234,6 @@ async function fetchCountries() {
       borderingCountries: country.borders,
     }
   })
-
-  //console.log(countries_data);
   return countries_data;
 }
 
