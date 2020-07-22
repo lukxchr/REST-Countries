@@ -67,35 +67,50 @@ function Filter(props) {
 }
 
 function CountryCard(props) {
-  return (
-    <div className="p-8 sm:w-full md:w-1/4">
-      <div className="bg-elements rounded overflow-hidden shadow" onClick={props.onClick}>
-        <img className="w-full sm:object-contain md:object-cover md:h-32 " src={props.flagPath} alt={`flag of ${props.name}`}/>
-        <div className="bg-gray-200 pl-4 pr-4 pb-8 pt-6 truncate text-gray-800">
-          <div className="mb-4 font-bold">{props.name}</div>
-          <div><span className="font-bold text-sm">Population: </span>{props.population}</div>
-          <div><span className="font-bold text-sm">Region: </span>{props.region}</div>
-          <div><span className="font-bold text-sm">Capital: </span>{props.capital}</div>
-        </div>
+  return (  
+    <div className="bg-elements rounded overflow-hidden shadow" onClick={props.onClick}>
+      <img className="w-full sm:object-contain md:object-cover md:h-32 " src={props.flagPath} alt={`flag of ${props.name}`}/>
+      <div className="bg-gray-200 pl-4 pr-4 pb-8 pt-6 truncate text-gray-800">
+        <div className="mb-4 font-bold">{props.name}</div>
+        <div><span className="font-bold text-sm">Population: </span>{props.population}</div>
+        <div><span className="font-bold text-sm">Region: </span>{props.region}</div>
+        <div><span className="font-bold text-sm">Capital: </span>{props.capital}</div>
       </div>
     </div>
   );
 }
 
 function CountryGallery(props) {
-
+  return (
+    <div className="flex flex-wrap ml-4 mr-4">
+    {console.log(`coutntry gallery rendered ${props.countries.length}`)}
+    {props.countries.map(country =>
+      <div className="p-8 sm:w-full md:w-1/4" key={country.code}>
+        <CountryCard
+          className="flex flex-wrap ml-4 mr-4"
+          name={country.name}
+          population={country.formattedPopulation}
+          region={country.region}
+          capital={country.capital}
+          flagPath={country.flagPath}
+          onClick={() => props.onCardClick(country.code) }
+        />
+      </div>
+    )}
+    </div>
+  );
 }
 
 function Button(props) {
   return (
     <button 
-      className={`${props.size === 'lg' ? 'h-8' : 'h-6 w-20'} flex items-center bg-elements shadow rounded-sm py-2 px-8 text-xs font-semibold cursor-pointer`}
+      className={`${props.size === 'lg' ? 'h-8' : 'h-6 w-20'} flex items-center justify-center bg-elements shadow rounded-sm py-2 px-8 text-xs font-semibold cursor-pointer truncate`}
       onClick={props.onClick}
     >
       {props.iconPath && 
         <img src={props.iconPath} alt="{props.text}" className="h-3 mr-1 fill-current"/>
       }
-      <span className="">{props.text}</span>
+      {props.text}
     </button>
   );
 }
@@ -119,15 +134,23 @@ function DetailModal(props) {
           <div className="c"><span className="font-bold text-sm">Sub Region: </span>{props.countryData.subregion}</div>
           <div className="c"><span className="font-bold text-sm">Capital: </span>{props.countryData.capital}</div>
         </div>
-        <div>
+        <div className="mb-6">
           <div className="c"><span className="font-bold text-sm">Top Level Domain: </span>{props.countryData.topLevelDomains}</div>
           <div className="c"><span className="font-bold text-sm">Currencies: </span>{props.countryData.currencies.map(cur => cur.name).join(', ')}</div>
           <div className="c"><span className="font-bold text-sm">Languages: </span>{props.countryData.languages.map(lang => lang.name).join(', ')}</div>
         </div>
-        <div className="mt-6 mb-16">
+        {props.countryData.borderingCountries.length > 0 && <div className="mb-16">
           <div className="font-semibold mb-4">Border Countries: </div>
-          <div className="flex flex-wrap">{props.countryData.borderingCountries.map(bc => <div className="m-1"><Button text={bc}/></div>)}</div>
-        </div>
+           <div className="flex flex-wrap">
+            {props.countryData.borderingCountries.map(bc => 
+              <div className="m-1" key={bc.code}>
+                <Button 
+                  text={bc.name.length < 12 ? bc.name : bc.code}
+                  onClick={() => props.onBorderingCountryClick(bc.code)}
+                />
+              </div>)}
+            </div>
+        </div>}
       </div>
     </div>
   );
@@ -164,6 +187,11 @@ function App() {
     setFilteredCountries(newFilteredCountries);
   }, [countries, searchQuery, selectedRegion]);
 
+  function loadDetailModal(countryCode) {
+    const country = filteredCountries.find(c => c.code === countryCode);
+    setDetailModalCountry(country);
+  }
+
   return (
     <div className={`h-screen w-full overflow-scroll theme-${theme} bg-primary text-primary`} style={{"fontFamily": 'Nunito Sans'}}>
       <Navbar 
@@ -186,28 +214,17 @@ function App() {
       </div>
 
       <CountryGallery 
-        countries={}
+        countries={filteredCountries}
+        onCardClick={countryCode => loadDetailModal(countryCode)}
       />
 
-      <div className="flex flex-wrap ml-4 mr-4">
-        {filteredCountries.map(country =>
-          <CountryCard
-            key={country.code}
-            className="flex flex-wrap ml-4 mr-4"
-            name={country.name}
-            population={country.formattedPopulation}
-            region={country.region}
-            capital={country.capital}
-            flagPath={country.flagPath}
-            onClick={() => setDetailModalCountry(filteredCountries.find(c => c.code === country.code))}
-          />
-        )}
-      </div>
+   
 
       {detailModalCountry && 
         <DetailModal
           countryData={detailModalCountry}
           onBackClick={() => setDetailModalCountry(null)}
+          onBorderingCountryClick={countryCode => loadDetailModal(countryCode)}
         />
       }
     </div>
@@ -217,8 +234,14 @@ function App() {
 async function fetchCountries() {
   console.log('fetchCountries called')
   const reponse = await fetch('https://restcountries.eu/rest/v2/all');
-  const countries_json = await reponse.json();
-  const countries_data = countries_json.map(country => {
+  const countriesJSON = await reponse.json();
+
+  const codeNameMap = 
+    {"AFG": "Afghanistan","ALA": "Åland Islands","ALB": "Albania","DZA": "Algeria","ASM": "American Samoa","AND": "Andorra","AGO": "Angola","AIA": "Anguilla","ATA": "Antarctica","ATG": "Antigua and Barbuda","ARG": "Argentina","ARM": "Armenia","ABW": "Aruba","AUS": "Australia","AUT": "Austria","AZE": "Azerbaijan","BHS": "Bahamas","BHR": "Bahrain","BGD": "Bangladesh","BRB": "Barbados","BLR": "Belarus","BEL": "Belgium","BLZ": "Belize","BEN": "Benin","BMU": "Bermuda","BTN": "Bhutan","BOL": "Bolivia (Plurinational State of)","BES": "Bonaire, Sint Eustatius and Saba","BIH": "Bosnia and Herzegovina","BWA": "Botswana","BVT": "Bouvet Island","BRA": "Brazil","IOT": "British Indian Ocean Territory","UMI": "United States Minor Outlying Islands","VGB": "Virgin Islands (British)","VIR": "Virgin Islands (U.S.)","BRN": "Brunei Darussalam","BGR": "Bulgaria","BFA": "Burkina Faso","BDI": "Burundi","KHM": "Cambodia","CMR": "Cameroon","CAN": "Canada","CPV": "Cabo Verde","CYM": "Cayman Islands","CAF": "Central African Republic","TCD": "Chad","CHL": "Chile","CHN": "China","CXR": "Christmas Island","CCK": "Cocos (Keeling) Islands","COL": "Colombia","COM": "Comoros","COG": "Congo","COD": "Congo (Democratic Republic of the)","COK": "Cook Islands","CRI": "Costa Rica","HRV": "Croatia","CUB": "Cuba","CUW": "Curaçao","CYP": "Cyprus","CZE": "Czech Republic","DNK": "Denmark","DJI": "Djibouti","DMA": "Dominica","DOM": "Dominican Republic","ECU": "Ecuador","EGY": "Egypt","SLV": "El Salvador","GNQ": "Equatorial Guinea","ERI": "Eritrea","EST": "Estonia","ETH": "Ethiopia","FLK": "Falkland Islands (Malvinas)","FRO": "Faroe Islands","FJI": "Fiji","FIN": "Finland","FRA": "France","GUF": "French Guiana","PYF": "French Polynesia","ATF": "French Southern Territories","GAB": "Gabon","GMB": "Gambia","GEO": "Georgia","DEU": "Germany","GHA": "Ghana","GIB": "Gibraltar","GRC": "Greece","GRL": "Greenland","GRD": "Grenada","GLP": "Guadeloupe","GUM": "Guam","GTM": "Guatemala","GGY": "Guernsey","GIN": "Guinea","GNB": "Guinea-Bissau","GUY": "Guyana","HTI": "Haiti","HMD": "Heard Island and McDonald Islands","VAT": "Holy See","HND": "Honduras","HKG": "Hong Kong","HUN": "Hungary","ISL": "Iceland","IND": "India","IDN": "Indonesia","CIV": "Côte d'Ivoire","IRN": "Iran (Islamic Republic of)","IRQ": "Iraq","IRL": "Ireland","IMN": "Isle of Man","ISR": "Israel","ITA": "Italy","JAM": "Jamaica","JPN": "Japan","JEY": "Jersey","JOR": "Jordan","KAZ": "Kazakhstan","KEN": "Kenya","KIR": "Kiribati","KWT": "Kuwait","KGZ": "Kyrgyzstan","LAO": "Lao People's Democratic Republic","LVA": "Latvia","LBN": "Lebanon","LSO": "Lesotho","LBR": "Liberia","LBY": "Libya","LIE": "Liechtenstein","LTU": "Lithuania","LUX": "Luxembourg","MAC": "Macao","MKD": "Macedonia (the former Yugoslav Republic of)","MDG": "Madagascar","MWI": "Malawi","MYS": "Malaysia","MDV": "Maldives","MLI": "Mali","MLT": "Malta","MHL": "Marshall Islands","MTQ": "Martinique","MRT": "Mauritania","MUS": "Mauritius","MYT": "Mayotte","MEX": "Mexico","FSM": "Micronesia (Federated States of)","MDA": "Moldova (Republic of)","MCO": "Monaco","MNG": "Mongolia","MNE": "Montenegro","MSR": "Montserrat","MAR": "Morocco","MOZ": "Mozambique","MMR": "Myanmar","NAM": "Namibia","NRU": "Nauru","NPL": "Nepal","NLD": "Netherlands","NCL": "New Caledonia","NZL": "New Zealand","NIC": "Nicaragua","NER": "Niger","NGA": "Nigeria","NIU": "Niue","NFK": "Norfolk Island","PRK": "Korea (Democratic People's Republic of)","MNP": "Northern Mariana Islands","NOR": "Norway","OMN": "Oman","PAK": "Pakistan","PLW": "Palau","PSE": "Palestine, State of","PAN": "Panama","PNG": "Papua New Guinea","PRY": "Paraguay","PER": "Peru","PHL": "Philippines","PCN": "Pitcairn","POL": "Poland","PRT": "Portugal","PRI": "Puerto Rico","QAT": "Qatar","KOS": "Republic of Kosovo","REU": "Réunion","ROU": "Romania","RUS": "Russian Federation","RWA": "Rwanda","BLM": "Saint Barthélemy","SHN": "Saint Helena, Ascension and Tristan da Cunha","KNA": "Saint Kitts and Nevis","LCA": "Saint Lucia","MAF": "Saint Martin (French part)","SPM": "Saint Pierre and Miquelon","VCT": "Saint Vincent and the Grenadines","WSM": "Samoa","SMR": "San Marino","STP": "Sao Tome and Principe","SAU": "Saudi Arabia","SEN": "Senegal","SRB": "Serbia","SYC": "Seychelles","SLE": "Sierra Leone","SGP": "Singapore","SXM": "Sint Maarten (Dutch part)","SVK": "Slovakia","SVN": "Slovenia","SLB": "Solomon Islands","SOM": "Somalia","ZAF": "South Africa","SGS": "South Georgia and the South Sandwich Islands","KOR": "Korea (Republic of)","SSD": "South Sudan","ESP": "Spain","LKA": "Sri Lanka","SDN": "Sudan","SUR": "Suriname","SJM": "Svalbard and Jan Mayen","SWZ": "Swaziland","SWE": "Sweden","CHE": "Switzerland","SYR": "Syrian Arab Republic","TWN": "Taiwan","TJK": "Tajikistan","TZA": "Tanzania, United Republic of","THA": "Thailand","TLS": "Timor-Leste","TGO": "Togo","TKL": "Tokelau","TON": "Tonga","TTO": "Trinidad and Tobago","TUN": "Tunisia","TUR": "Turkey","TKM": "Turkmenistan","TCA": "Turks and Caicos Islands","TUV": "Tuvalu","UGA": "Uganda","UKR": "Ukraine","ARE": "United Arab Emirates","GBR": "United Kingdom of Great Britain and Northern Ireland","USA": "United States of America","URY": "Uruguay","UZB": "Uzbekistan","VUT": "Vanuatu","VEN": "Venezuela (Bolivarian Republic of)","VNM": "Viet Nam","WLF": "Wallis and Futuna","ESH": "Western Sahara","YEM": "Yemen","ZMB": "Zambia","ZWE": "Zimbabwe"}
+  const countriesData = countriesJSON.map(country => {
+    const borderingCountries = country.borders.map(code => {
+      return {name: codeNameMap[code], code: code}
+    });
     return {
       name: country.name,
       code: country.alpha3Code,
@@ -231,10 +254,10 @@ async function fetchCountries() {
       topLevelDomains: country.topLevelDomain,
       currencies: country.currencies,
       languages: country.languages,
-      borderingCountries: country.borders,
+      borderingCountries: borderingCountries,
     }
   })
-  return countries_data;
+  return countriesData;
 }
 
 
