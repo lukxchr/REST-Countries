@@ -10,6 +10,11 @@ module.exports = {
       primary: "var(--color-bg)",
       elements: "var(--color-elements)",
     },
+    extend: {
+      spacing: {
+        "72": "18rem",
+      }
+    },
   },
   variants: {},
   plugins: [],

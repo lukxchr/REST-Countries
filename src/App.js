@@ -124,33 +124,35 @@ function DetailModal(props) {
         iconPath='images/icon-arrow-left.svg'
         onClick={props.onBackClick}
       />
-      <div className="">
-        <img className="mt-16" src={props.countryData.flagPath} alt={`flag of ${props.countryData.name}`}/>
-        <div className="text-lg font-bold mt-10">{props.countryData.name}</div>
-        <div className="my-6">
-          <div className="c"><span className="font-bold text-sm">Native Name: </span>{props.countryData.name}</div>
-          <div className="c"><span className="font-bold text-sm">Population: </span>{props.countryData.formattedPopulation}</div>
-          <div className="c"><span className="font-bold text-sm">Region: </span>{props.countryData.region}</div>
-          <div className="c"><span className="font-bold text-sm">Sub Region: </span>{props.countryData.subregion}</div>
-          <div className="c"><span className="font-bold text-sm">Capital: </span>{props.countryData.capital}</div>
+      <div className="md:flex md:flex-wrap">
+        <img className="mt-16 md:w-1/2 md:h-72 md:pr-16 md:object-contain" src={props.countryData.flagPath} alt={`flag of ${props.countryData.name}`}/>
+        <div className="md:w-1/2 md:flex md:flex-wrap md:mt-12">
+          <div className="text-lg font-bold mt-10 md:w-full md:text-2xl">{props.countryData.name}</div>
+          <div className="mt-6 md:w-1/2">
+            <div className="c"><span className="font-bold text-sm">Native Name: </span>{props.countryData.name}</div>
+            <div className="c"><span className="font-bold text-sm">Population: </span>{props.countryData.formattedPopulation}</div>
+            <div className="c"><span className="font-bold text-sm">Region: </span>{props.countryData.region}</div>
+            <div className="c"><span className="font-bold text-sm">Sub Region: </span>{props.countryData.subregion}</div>
+            <div className="c"><span className="font-bold text-sm">Capital: </span>{props.countryData.capital}</div>
+          </div>
+          <div className="mt-6 md:w-1/2 md:pl-8">
+            <div className="c"><span className="font-bold text-sm">Top Level Domain: </span>{props.countryData.topLevelDomains}</div>
+            <div className="c"><span className="font-bold text-sm">Currencies: </span>{props.countryData.currencies.map(cur => cur.name).join(', ')}</div>
+            <div className="c"><span className="font-bold text-sm">Languages: </span>{props.countryData.languages.map(lang => lang.name).join(', ')}</div>
+          </div>
+          {props.countryData.borderingCountries.length > 0 && <div className="mb-16">
+            <div className="font-semibold mt-6 mb-2">Border Countries: </div>
+            <div className="flex flex-wrap">
+              {props.countryData.borderingCountries.map(bc => 
+                <div className="m-1" key={bc.code}>
+                  <Button 
+                    text={bc.name.length < 12 ? bc.name : bc.code}
+                    onClick={() => props.onBorderingCountryClick(bc.code)}
+                  />
+                </div>)}
+              </div>
+          </div>}
         </div>
-        <div className="mb-6">
-          <div className="c"><span className="font-bold text-sm">Top Level Domain: </span>{props.countryData.topLevelDomains}</div>
-          <div className="c"><span className="font-bold text-sm">Currencies: </span>{props.countryData.currencies.map(cur => cur.name).join(', ')}</div>
-          <div className="c"><span className="font-bold text-sm">Languages: </span>{props.countryData.languages.map(lang => lang.name).join(', ')}</div>
-        </div>
-        {props.countryData.borderingCountries.length > 0 && <div className="mb-16">
-          <div className="font-semibold mb-4">Border Countries: </div>
-           <div className="flex flex-wrap">
-            {props.countryData.borderingCountries.map(bc => 
-              <div className="m-1" key={bc.code}>
-                <Button 
-                  text={bc.name.length < 12 ? bc.name : bc.code}
-                  onClick={() => props.onBorderingCountryClick(bc.code)}
-                />
-              </div>)}
-            </div>
-        </div>}
       </div>
     </div>
   );
@@ -188,7 +190,7 @@ function App() {
   }, [countries, searchQuery, selectedRegion]);
 
   function loadDetailModal(countryCode) {
-    const country = filteredCountries.find(c => c.code === countryCode);
+    const country = countries.find(c => c.code === countryCode);
     setDetailModalCountry(country);
   }
 
