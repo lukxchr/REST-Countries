@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from 'react';
+import {ReactComponent as LeftArrowIcon} from './assets/images/icon-arrow-left.svg';
 
 function Navbar(props) {
   return (
       <div className="bg-elements shadow h-16 flex items-center justify-between pl-12 pr-12 sticky top-0 z-10">
           <div className="text-xl font-bold">{props.title}</div>
           <a href="#" className="flex items-center" onClick={props.onThemeSwitch}>
-            <svg className="inline-block h-4 fill-current" viewBox="0 0 24 24"><path d="M9.57 3.38a8 8 0 0 0 10.4 10.4 1 1 0 0 1 1.31 1.3 10 10 0 1 1-13-13 1 1 0 0 1 1.3 1.3zM7.1 5.04A8 8 0 1 0 18.3 16.27 10 10 0 0 1 7.08 5.04z"/></svg>
+            <svg className="h-4 fill-current" viewBox="0 0 24 24"><path d="M9.57 3.38a8 8 0 0 0 10.4 10.4 1 1 0 0 1 1.31 1.3 10 10 0 1 1-13-13 1 1 0 0 1 1.3 1.3zM7.1 5.04A8 8 0 1 0 18.3 16.27 10 10 0 0 1 7.08 5.04z"/></svg>
             <span className="ml-1 font-semibold tracking-tight text-xs">Dark Mode</span>
           </a>
       </div>
@@ -83,6 +84,7 @@ function CountryCard(props) {
 function CountryGallery(props) {
   return (
     <div className="flex flex-wrap ml-4 mr-4">
+    {props.countries.length == 0 && <div className="w-full h-72 flex items-center justify-center text-xl">No results.</div>}
     {console.log(`coutntry gallery rendered ${props.countries.length}`)}
     {props.countries.map(country =>
       <div className="p-8 sm:w-full md:w-1/4" key={country.code}>
@@ -108,7 +110,7 @@ function Button(props) {
       onClick={props.onClick}
     >
       {props.iconPath && 
-        <img src={props.iconPath} alt="{props.text}" className="h-3 mr-1 fill-current"/>
+        <div><LeftArrowIcon className="h-3 mr-1 fill-current"/></div>
       }
       {props.text}
     </button>
@@ -125,7 +127,10 @@ function DetailModal(props) {
         onClick={props.onBackClick}
       />
       <div className="md:flex md:flex-wrap">
-        <img className="mt-16 md:w-1/2 md:h-72 md:pr-16 md:object-contain" src={props.countryData.flagPath} alt={`flag of ${props.countryData.name}`}/>
+        <div className="flex justify-center mt-16 md:w-1/2 md:h-80 md:pr-16 md:object-contain">
+          <img className="shadow md:h-full" src={props.countryData.flagPath} alt={`flag of ${props.countryData.name}`}/>
+          {/* <img className="mt-16 md:w-1/2 md:h-80 md:pr-16 md:object-contain" src={props.countryData.flagPath} alt={`flag of ${props.countryData.name}`}/> */}
+        </div>
         <div className="md:w-1/2 md:flex md:flex-wrap md:mt-12">
           <div className="text-lg font-bold mt-10 md:w-full md:text-2xl">{props.countryData.name}</div>
           <div className="mt-6 md:w-1/2">
@@ -141,7 +146,7 @@ function DetailModal(props) {
             <div className="c"><span className="font-bold text-sm">Languages: </span>{props.countryData.languages.map(lang => lang.name).join(', ')}</div>
           </div>
           {props.countryData.borderingCountries.length > 0 && <div className="mb-16">
-            <div className="font-semibold mt-6 mb-2">Border Countries: </div>
+            <div className="font-semibold mt-6 mb-2 md:mb-1">Border Countries: </div>
             <div className="flex flex-wrap">
               {props.countryData.borderingCountries.map(bc => 
                 <div className="m-1" key={bc.code}>
