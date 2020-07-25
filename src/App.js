@@ -5,7 +5,7 @@ function Navbar(props) {
   return (
       <div className="bg-elements shadow h-16 flex items-center justify-between pl-12 pr-12 sticky top-0 z-10">
           <div className="text-xl font-bold">{props.title}</div>
-          <button className="flex items-center" onClick={props.onThemeSwitch}>
+          <button className="flex items-center focus:outline-none" onClick={props.onThemeSwitch}>
             <svg className="h-4 fill-current" viewBox="0 0 24 24"><path d="M9.57 3.38a8 8 0 0 0 10.4 10.4 1 1 0 0 1 1.31 1.3 10 10 0 1 1-13-13 1 1 0 0 1 1.3 1.3zM7.1 5.04A8 8 0 1 0 18.3 16.27 10 10 0 0 1 7.08 5.04z"/></svg>
             <span className="ml-1 font-semibold tracking-tight text-xs">Dark Mode</span>
           </button>
@@ -71,7 +71,7 @@ function Filter(props) {
 
 function CountryCard(props) {
   return (  
-    <div className="bg-elements rounded shadow" onClick={props.onClick}>
+    <div className="bg-elements rounded shadow overflow-hidden" onClick={props.onClick}>
       <img className="w-full sm:object-contain md:object-cover md:h-32 " src={props.flagPath} alt={`flag of ${props.name}`}/>
       <div className="bg-gray-200 pl-4 pr-4 pb-8 pt-6 text-gray-800">
         <div className="truncate mb-4 font-bold">{props.name}</div>
@@ -106,7 +106,7 @@ function CountryGallery(props) {
 function Button(props) {
   return (
     <button 
-      className={`${props.size === 'lg' ? 'h-8' : 'h-6 w-20'} flex items-center justify-center bg-elements shadow rounded-sm py-2 px-8 text-xs font-semibold cursor-pointer hover:bg-input`}
+      className={`${props.size === 'lg' ? 'h-8' : 'h-6 w-24'} flex items-center justify-center bg-elements shadow rounded-sm py-2 px-8 text-xs font-semibold cursor-pointer hover:bg-input`}
       title={props.title}
       onClick={props.onClick}
     >
@@ -126,9 +126,9 @@ function DetailModal(props) {
         onClick={props.onBackClick}
       />
       <div className="md:flex md:flex-wrap">
-        <div className="flex justify-center mt-16 md:w-1/2 md:h-80 md:pr-16 md:object-contain">
+        <div className="flex justify-center mt-16 md:w-1/2 md:h-80 md:pr-16">
           <img 
-            className="shadow md:h-full" 
+            className="shadow md:h-full md:object-cover" 
             src={props.country.flagPath} 
             alt={`flag of ${props.country.name}`}
           />
@@ -149,11 +149,11 @@ function DetailModal(props) {
           </div>
           {props.country.borderingCountries.length > 0 && <div className="mb-16">
             <div className="font-semibold mt-6 mb-2 md:mb-1">Border Countries: </div>
-            <div className="flex flex-wrap">
+            <div className="flex flex-wrap justify-between md:justify-start">
               {props.country.borderingCountries.map(bc => 
                 <div className="m-1" key={bc.code}>
                   <Button 
-                    text={bc.name.length < 12 ? bc.name : bc.code}
+                    text={bc.name.length < 16 ? bc.name : bc.code}
                     title={bc.name}
                     onClick={() => props.onBorderingCountryClick(bc.code)}
                   />
