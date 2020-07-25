@@ -2,6 +2,10 @@
 
 @tailwind components;
 
+.label {
+    @apply font-bold text-sm;
+}
+
 @tailwind utilities;
 
 .theme-light {
@@ -15,7 +19,7 @@
     --color-bg: hsl(207, 26%, 17%);
     --color-text: hsl(0, 0%, 100%);
     --color-elements: hsl(209, 23%, 22%);
-    --color-input: hsl(0, 0%, 100%);
+    --color-input: hsl(0, 0%, 52%);
 }
 
 

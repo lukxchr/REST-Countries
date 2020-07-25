@@ -4,11 +4,11 @@ module.exports = {
     colors: {},
     textColor: {
       primary: "var(--color-text)",
-      input: "var(--color-input)",
     },
     backgroundColor: {
       primary: "var(--color-bg)",
       elements: "var(--color-elements)",
+      input: "var(--color-input)",
     },
     extend: {
       spacing: {
