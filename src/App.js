@@ -75,9 +75,9 @@ function CountryCard(props) {
       <img className="w-full sm:object-contain md:object-cover md:h-32 " src={props.flagPath} alt={`flag of ${props.name}`}/>
       <div className="bg-gray-200 pl-4 pr-4 pb-8 pt-6 text-gray-800">
         <div className="truncate mb-4 font-bold">{props.name}</div>
-        <div><span className="label">Population: </span>{props.population}</div>
-        <div><span className="label">Region: </span>{props.region}</div>
-        <div><span className="label">Capital: </span>{props.capital}</div>
+        <div className="truncate"><span className="label">Population: </span>{props.population}</div>
+        <div className="truncate"><span className="label">Region: </span>{props.region}</div>
+        <div className="truncate"><span className="label">Capital: </span>{props.capital}</div>
       </div>
     </div>
   );
@@ -106,12 +106,12 @@ function CountryGallery(props) {
 function Button(props) {
   return (
     <button 
-      className={`${props.size === 'lg' ? 'h-8' : 'h-6 w-24'} flex items-center justify-center bg-elements shadow rounded-sm py-2 px-8 text-xs font-semibold cursor-pointer hover:bg-input`}
+      className={`${props.size === 'lg' ? 'h-8 px-8' : 'h-6 w-24 px-2'} flex items-center justify-center bg-elements shadow rounded-sm py-1 text-xs font-semibold cursor-pointer hover:bg-input`}
       title={props.title}
       onClick={props.onClick}
     >
       {props.icon ?? props.icon}
-      {props.text}
+      <div>{props.text}</div>
     </button>
   );
 }
@@ -126,14 +126,14 @@ function DetailModal(props) {
         onClick={props.onBackClick}
       />
       <div className="md:flex md:flex-wrap">
-        <div className="flex justify-center mt-16 md:w-1/2 md:h-80 md:pr-16">
+        <div className="relative pb-2/3 md:pb-1/3 mt-16 w-full md:w-1/2">
           <img 
-            className="shadow md:h-full md:object-cover" 
-            src={props.country.flagPath} 
-            alt={`flag of ${props.country.name}`}
+              className="absolute h-full w-full object-cover shadow" 
+              src={props.country.flagPath} 
+              alt={`flag of ${props.country.name}`}
           />
         </div>
-        <div className="md:w-1/2 md:flex md:flex-wrap md:mt-12">
+        <div className="md:w-1/2 md:flex md:flex-wrap md:mt-12 md:pl-16">
           <div className="text-lg font-bold mt-10 md:w-full md:text-2xl">{props.country.name}</div>
           <div className="mt-6 md:w-1/2">
             <div><span className="label">Native Name: </span>{props.country.name}</div>
@@ -149,11 +149,11 @@ function DetailModal(props) {
           </div>
           {props.country.borderingCountries.length > 0 && <div className="mb-16">
             <div className="font-semibold mt-6 mb-2 md:mb-1">Border Countries: </div>
-            <div className="flex flex-wrap justify-between md:justify-start">
+            <div className="flex flex-wrap">
               {props.country.borderingCountries.map(bc => 
                 <div className="m-1" key={bc.code}>
                   <Button 
-                    text={bc.name.length < 16 ? bc.name : bc.code}
+                    text={bc.name.length < 12 ? bc.name : bc.code}
                     title={bc.name}
                     onClick={() => props.onBorderingCountryClick(bc.code)}
                   />
@@ -206,7 +206,7 @@ function App() {
   }
 
   return (
-    <div className={`h-screen w-full overflow-scroll theme-${theme} bg-primary text-primary`} style={{"fontFamily": 'Nunito Sans'}}>
+    <div className={`h-screen w-full overflow-y-scroll overflow-x-hidden theme-${theme} bg-primary text-primary`}>
       <Navbar 
         onThemeSwitch={() => setTheme(theme => theme === 'light' ? setTheme('dark') : setTheme('light'))}
         title="Where in the world?"
